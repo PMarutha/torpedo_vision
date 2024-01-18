@@ -9,6 +9,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -63,8 +64,6 @@ public final class DriveTrain {
 
         gyro = new AHRS(SPI.Port.kMXP);
 
-        tank_kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(19.5)); // INSERT TRACK WIDTH HERE
-
         var stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
         var visionStdDevs = VecBuilder.fill(1, 1, 1);
 
@@ -79,13 +78,33 @@ public final class DriveTrain {
         poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds, stdDevs);
     }
 
+    public void updatePoseEstimator(){
+        poseEstimator.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+    }
+
+    public double getLeftPosition(){
+        return leftEncoder.getPosition();
+    }
+
+    public double getRightPosition(){
+        return rightEncoder.getPosition();
+    }
+
+    public Rotation2d getAngle(){
+        return gyro.getRotation2d();
+    }
+
+    public void updateOdometry() {
+        poseEstimator.update(getAngle(), getLeftPosition(), getRightPosition());
+    }
+
+
+
     public void run(){
         final double rSpeed = Math.signum(Robot.driverController.getRightY())*Constants.DRIVE_POWER*Math.pow(Math.abs(Robot.driverController.getRightY()), Constants.DRIVE_EXPONENT);
        //(sign of input) * (drive power) * (absolute value of input)^(drive exponent)
        final double lSpeed = Math.signum(Robot.driverController.getLeftY())*Constants.DRIVE_POWER*Math.pow(Math.abs(Robot.driverController.getLeftY()), Constants.DRIVE_EXPONENT);
        //(sign of input) * (drive power) * (absolute value of input)^(drive exponent)
-        drivetrain.tankDrive(-1*lSpeed, rSpeed);
-        poseEstimator.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
-        System.out.println(poseEstimator.getEstimatedPosition());
+        drivetrain.tankDrive(-1 * lSpeed, rSpeed);
     }
 }
