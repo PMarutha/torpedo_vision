@@ -3,8 +3,6 @@ package frc.robot;
 import java.io.IOException;
 import java.util.Optional;
 
-import org.photonvision.EstimatedRobotPose;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -25,7 +23,6 @@ import frc.robot.LimelightHelpers.LimelightResults;
 import edu.wpi.first.wpilibj.Filesystem;
 
 public class Vision {
-    private final DriveTrain drivetrain;
     private final DifferentialDriveKinematics tank_kinematics; // INSERT TRACK WIDTH HERE;
     private final DifferentialDrivePoseEstimator poseEstimator;
     
@@ -33,14 +30,13 @@ public class Vision {
 
     private AprilTagFieldLayout fieldLayout;
     // private Transform3d robotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.45), new Rotation3d(0,0,22));
+    private DriveTrain drivetrain;
 
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
 
-    public Vision(){
-
-        drivetrain = new DriveTrain();
+    public Vision(DriveTrain drivetrain){
 
         var stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
         var visionStdDevs = VecBuilder.fill(1, 1, 1);
@@ -57,6 +53,7 @@ public class Vision {
         tank_kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(19.5)); 
         poseEstimator = new DifferentialDrivePoseEstimator(tank_kinematics, drivetrain.getAngle(), drivetrain.getLeftPosition(), drivetrain.getRightPosition(), new Pose2d(), stateStdDevs, visionStdDevs);
         
+        this.drivetrain = drivetrain;
     }
 
 

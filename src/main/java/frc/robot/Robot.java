@@ -41,7 +41,7 @@ public class Robot extends TimedRobot {
     driverController = new XboxController(Constants.DRIVER_CONTROLLER_PORT);
     operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
     drivetrain = new DriveTrain();
-    vision = new Vision();
+    vision = new Vision(drivetrain);
 
 
   }
