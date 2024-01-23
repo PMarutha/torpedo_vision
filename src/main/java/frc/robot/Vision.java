@@ -1,9 +1,11 @@
 package frc.robot;
 
 import java.io.IOException;
+import java.sql.Driver;
 import java.util.Optional;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -17,7 +19,10 @@ import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.LimelightHelpers.LimelightResults;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -25,6 +30,8 @@ import edu.wpi.first.wpilibj.Filesystem;
 public class Vision {
     private final DifferentialDriveKinematics tank_kinematics; // INSERT TRACK WIDTH HERE;
     private final DifferentialDrivePoseEstimator poseEstimator;
+
+    private final Field2d m_field = new Field2d();
     
     // private double lastEstTimestamp = 0;
 
@@ -38,8 +45,20 @@ public class Vision {
 
     public Vision(DriveTrain drivetrain){
 
-        var stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
-        var visionStdDevs = VecBuilder.fill(1, 1, 1);
+        this.drivetrain = drivetrain;
+
+        var stateStdDevs = VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5));
+        var visionStdDevs = VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30));
+
+        // // 2023 FIELD MAP
+        // try {
+        //     fieldLayout = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+        // } catch (IOException e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // }
+
+        // 2024 CRESCENDO
 
         String bruh = Filesystem.getDeployDirectory().getAbsolutePath() + "/crescendo.json";
 
@@ -53,32 +72,24 @@ public class Vision {
         tank_kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(19.5)); 
         poseEstimator = new DifferentialDrivePoseEstimator(tank_kinematics, drivetrain.getAngle(), drivetrain.getLeftPosition(), drivetrain.getRightPosition(), new Pose2d(), stateStdDevs, visionStdDevs);
         
-        this.drivetrain = drivetrain;
+
+        SmartDashboard.putData("Field", m_field);
     }
 
 
     public void visionOdometry() {
         poseEstimator.update(drivetrain.getAngle(), drivetrain.getLeftPosition(), drivetrain.getRightPosition());
 
-        LimelightHelpers.Results results = LimelightHelpers.getLatestResults("limelight").targetingResults;
-        Pose2d estPose = LimelightHelpers.toPose2D(results.botpose);
+        // LimelightHelpers.Results results = LimelightHelpers.getLatestResults("limelight").targetingResults;
+        // Pose2d estPose = LimelightHelpers.toPose2D(results.botpose);
 
-        var estStdDevs = getEstimationStdDevs(estPose);
+        // var estStdDevs = getEstimationStdDevs(estPose);
         
-        poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), estStdDevs);
+        // poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), estStdDevs);
+        
+        m_field.setRobotPose(poseEstimator.getEstimatedPosition());
     }
 
-
-    // IGNORE ------------------------------------------------------------------------------------------------
-    // public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-    //     var visionEst = photonEstimator.update();
-    //     double latestTimestamp = camera.getLatestResult().getTimestampSeconds();
-    //     boolean newResult = Math.abs(latestTimestamp - lastEstTimestamp) > 1e-5;
-
-    //     if (newResult) lastEstTimestamp = latestTimestamp;
-    //     return visionEst;
-    // }
-    // -----------------------------------------------------------------------------------------------
 
     public Matrix<N3, N1> getEstimationStdDevs(Pose2d estimatedPose) {
         var estStdDevs = kSingleTagStdDevs;
@@ -104,17 +115,5 @@ public class Vision {
 
         return estStdDevs;
     }
-
-    // IGNORE ------------------------------------------------------------------------------------------------------
-    // var visionEst = vision.getEstimatedGlobalPose();
-    // visionEst.ifPresent(
-    //     est -> {
-    //       var estPose = est.estimatedPose.toPose2d();
-    //       // Change our trust in the measurement based on the tags we can see
-    //       var estStdDevs = vision.getEstimationStdDevs(estPose);
-
-    //       drivetrain.addVisionMeasurement(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
-    //             });
-    // -------------------------------------------------------------------------------------------------------------
 
 }

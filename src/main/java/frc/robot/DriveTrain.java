@@ -22,10 +22,6 @@ import edu.wpi.first.wpilibj.SPI;
 
 public final class DriveTrain {
     private DifferentialDrive drivetrain;
-
-    private DifferentialDrivePoseEstimator poseEstimator; 
-    private DifferentialDriveKinematics tank_kinematics;
-
     private RelativeEncoder leftEncoder, rightEncoder;
 
     private AHRS gyro;
@@ -64,22 +60,9 @@ public final class DriveTrain {
 
         gyro = new AHRS(SPI.Port.kMXP);
 
-        var stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.1);
-        var visionStdDevs = VecBuilder.fill(1, 1, 1);
-
-        poseEstimator = new DifferentialDrivePoseEstimator(tank_kinematics, gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition(), new Pose2d(), stateStdDevs, visionStdDevs);
-
         final MotorControllerGroup leftMotors = new MotorControllerGroup(Left1, Left2, Left3);
         final MotorControllerGroup rightMotors = new MotorControllerGroup(Right1, Right2, Right3);
         this.drivetrain = new DifferentialDrive(leftMotors, rightMotors);
-    }
-
-    public void addVisionMeasurement(Pose2d visionMeasurement, double timestampSeconds, Matrix<N3, N1> stdDevs) {
-        poseEstimator.addVisionMeasurement(visionMeasurement, timestampSeconds, stdDevs);
-    }
-
-    public void updatePoseEstimator(){
-        poseEstimator.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
     }
 
     public double getLeftPosition(){
@@ -87,17 +70,12 @@ public final class DriveTrain {
     }
 
     public double getRightPosition(){
-        return rightEncoder.getPosition();
+        return leftEncoder.getPosition();
     }
 
     public Rotation2d getAngle(){
         return gyro.getRotation2d();
     }
-
-    public void updateOdometry() {
-        poseEstimator.update(getAngle(), getLeftPosition(), getRightPosition());
-    }
-
 
 
     public void run(){
