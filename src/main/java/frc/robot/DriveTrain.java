@@ -26,7 +26,6 @@ public final class DriveTrain {
 
     private AHRS gyro;
 
-
     public DriveTrain() {
         CANSparkMax Left1 = new CANSparkMax(Constants.LEFT_DRIVE_MOTOR_PORTS[0], MotorType.kBrushless);
         CANSparkMax Left2 = new CANSparkMax(Constants.LEFT_DRIVE_MOTOR_PORTS[1], MotorType.kBrushless);
@@ -63,18 +62,25 @@ public final class DriveTrain {
         final MotorControllerGroup leftMotors = new MotorControllerGroup(Left1, Left2, Left3);
         final MotorControllerGroup rightMotors = new MotorControllerGroup(Right1, Right2, Right3);
         this.drivetrain = new DifferentialDrive(leftMotors, rightMotors);
+
+        leftEncoder.setPositionConversionFactor(2*Math.PI*(0.1524 / 2.0)*(1/10.3846));
+        rightEncoder.setPositionConversionFactor(2*Math.PI*(0.1524 / 2.0)*(1/10.3846));
     }
 
-    public double getLeftPosition(){
+    public double getLeftPosition() {
         return leftEncoder.getPosition();
     }
 
-    public double getRightPosition(){
+    public double getRightPosition() {
         return leftEncoder.getPosition();
     }
 
     public Rotation2d getAngle(){
         return gyro.getRotation2d();
+    }
+
+    public boolean isConnected() {
+        return gyro.isConnected();
     }
 
 
