@@ -83,6 +83,10 @@ public final class DriveTrain {
         return gyro.isConnected();
     }
 
+    public void zeroHeading(){
+        gyro.reset();
+    }
+
 
     public void run(){
         final double rSpeed = Math.signum(Robot.driverController.getRightY())*Constants.DRIVE_POWER*Math.pow(Math.abs(Robot.driverController.getRightY()), Constants.DRIVE_EXPONENT);
@@ -90,5 +94,10 @@ public final class DriveTrain {
        final double lSpeed = Math.signum(Robot.driverController.getLeftY())*Constants.DRIVE_POWER*Math.pow(Math.abs(Robot.driverController.getLeftY()), Constants.DRIVE_EXPONENT);
        //(sign of input) * (drive power) * (absolute value of input)^(drive exponent)
         drivetrain.tankDrive(-1 * lSpeed, rSpeed);
+
+        //recently added
+        if(Robot.driverController.getBButton()){
+            zeroHeading();
+        }
     }
 }
