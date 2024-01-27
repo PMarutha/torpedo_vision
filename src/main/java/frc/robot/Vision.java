@@ -39,11 +39,12 @@ public class Vision {
     // private Transform3d robotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.45), new Rotation3d(0,0,22));
     private DriveTrain drivetrain;
 
+    public static final Matrix<N3, N1> kTestStdDevs = VecBuilder.fill(0.2, 0.2, 1);
     public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
 
-    public Vision(DriveTrain drivetrain){
+    public Vision(DriveTrain drivetrain) {
 
         this.drivetrain = drivetrain;
 
@@ -80,14 +81,20 @@ public class Vision {
     public void visionOdometry() {
         poseEstimator.update(drivetrain.getAngle(), drivetrain.getLeftPosition(), drivetrain.getRightPosition());
 
-        // LimelightHelpers.Results results = LimelightHelpers.getLatestResults("limelight").targetingResults;
-        // Pose2d estPose = LimelightHelpers.toPose2D(results.botpose);
+        LimelightHelpers.Results results = LimelightHelpers.getLatestResults("limelight").targetingResults;
+        Pose2d estPose = LimelightHelpers.toPose2D(results.botpose);
 
-        // var estStdDevs = getEstimationStdDevs(estPose);
+        var estStdDevs = getEstimationStdDevs(estPose);
         
-        // poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), estStdDevs);
-        
+       if(results.getBotPose2d().getX() > 0.5 && results.getBotPose2d().getY() > 0.5) {
+         poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), kSingleTagStdDevs);
+       }
+       
         m_field.setRobotPose(poseEstimator.getEstimatedPosition());
+    }
+
+    public Pose2d getPose() {
+        return poseEstimator.getEstimatedPosition();
     }
 
 
