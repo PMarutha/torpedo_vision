@@ -66,6 +66,7 @@ public final class DriveTrain {
     }
 
     public double getLeftPosition(){
+        leftEncoder.setPositionConversionFactor(2*Math.PI*(0.1524)/2);
         return leftEncoder.getPosition();
     }
 
