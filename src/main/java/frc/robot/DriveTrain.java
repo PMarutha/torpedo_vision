@@ -5,15 +5,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import com.kauailabs.navx.frc.AHRS;
@@ -25,7 +17,6 @@ public final class DriveTrain {
     private RelativeEncoder leftEncoder, rightEncoder;
 
     private AHRS gyro;
-
 
     public DriveTrain() {
         CANSparkMax Left1 = new CANSparkMax(Constants.LEFT_DRIVE_MOTOR_PORTS[0], MotorType.kBrushless);
@@ -63,19 +54,29 @@ public final class DriveTrain {
         final MotorControllerGroup leftMotors = new MotorControllerGroup(Left1, Left2, Left3);
         final MotorControllerGroup rightMotors = new MotorControllerGroup(Right1, Right2, Right3);
         this.drivetrain = new DifferentialDrive(leftMotors, rightMotors);
+
+        leftEncoder.setPositionConversionFactor(2*Math.PI*(0.1524 / 2.0)*(1/10.3846));
+        rightEncoder.setPositionConversionFactor(2*Math.PI*(0.1524 / 2.0)*(1/10.3846));
     }
 
-    public double getLeftPosition(){
-        leftEncoder.setPositionConversionFactor(2*Math.PI*(0.1524)/2);
+    public double getLeftPosition() {
         return leftEncoder.getPosition();
     }
 
-    public double getRightPosition(){
+    public double getRightPosition() {
         return leftEncoder.getPosition();
     }
 
     public Rotation2d getAngle(){
         return gyro.getRotation2d();
+    }
+
+    public boolean isConnected() {
+        return gyro.isConnected();
+    }
+
+    public void zeroHeading(){
+        gyro.reset();
     }
 
 
@@ -85,5 +86,10 @@ public final class DriveTrain {
        final double lSpeed = Math.signum(Robot.driverController.getLeftY())*Constants.DRIVE_POWER*Math.pow(Math.abs(Robot.driverController.getLeftY()), Constants.DRIVE_EXPONENT);
        //(sign of input) * (drive power) * (absolute value of input)^(drive exponent)
         drivetrain.tankDrive(-1 * lSpeed, rSpeed);
+
+        //recently added
+        if(Robot.driverController.getBButton()){
+            zeroHeading();
+        }
     }
 }

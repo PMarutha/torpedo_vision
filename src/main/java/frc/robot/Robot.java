@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -27,23 +28,16 @@ public class Robot extends TimedRobot {
   public static DriveTrain drivetrain;
   public static Vision vision;
 
-
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
-
     driverController = new XboxController(Constants.DRIVER_CONTROLLER_PORT);
     operatorController = new XboxController(Constants.OPERATOR_CONTROLLER_PORT);
     drivetrain = new DriveTrain();
     vision = new Vision(drivetrain);
-
-
   }
 
   /**
@@ -54,7 +48,10 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    SmartDashboard.putNumber("Robot Heading", drivetrain.getAngle().getDegrees());
+    SmartDashboard.putBoolean("Gyro Connected", drivetrain.isConnected());
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
