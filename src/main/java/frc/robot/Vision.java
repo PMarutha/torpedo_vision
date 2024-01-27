@@ -77,18 +77,30 @@ public class Vision {
         SmartDashboard.putData("Field", m_field);
     }
 
+    public boolean tagDetected(){
+        return LimelightHelpers.getTV("limelight");
+    }
+
 
     public void visionOdometry() {
         poseEstimator.update(drivetrain.getAngle(), drivetrain.getLeftPosition(), drivetrain.getRightPosition());
 
         LimelightHelpers.Results results = LimelightHelpers.getLatestResults("limelight").targetingResults;
-        Pose2d estPose = LimelightHelpers.toPose2D(results.botpose);
 
-        var estStdDevs = getEstimationStdDevs(estPose);
+
+        if(!(results.botpose[0] == 0 && results.botpose[1]==1) && tagDetected()){
+            Pose2d estPose = LimelightHelpers.toPose2D(results.botpose_wpiblue);
+            poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), kSingleTagStdDevs);
+        }
         
-       if(results.getBotPose2d().getX() > 0.5 && results.getBotPose2d().getY() > 0.5) {
-         poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), kSingleTagStdDevs);
-       }
+
+
+        //var estStdDevs = getEstimationStdDevs(estPose);
+        
+        // peyton
+    //    if(results.getBotPose2d().getX() > 0.5 && results.getBotPose2d().getY() > 0.5) {
+    //      poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), kSingleTagStdDevs);
+    //    }
        
         m_field.setRobotPose(poseEstimator.getEstimatedPosition());
     }
