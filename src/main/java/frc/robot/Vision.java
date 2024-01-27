@@ -86,8 +86,10 @@ public class Vision {
 
         var estStdDevs = getEstimationStdDevs(estPose);
         
-        poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), kSingleTagStdDevs);
-        
+       if(results.getBotPose2d().getX() > 0.5 && results.getBotPose2d().getY() > 0.5) {
+         poseEstimator.addVisionMeasurement(estPose, Timer.getFPGATimestamp() - (results.latency_capture / 1000.0) - (results.latency_pipeline / 1000.0), kSingleTagStdDevs);
+       }
+       
         m_field.setRobotPose(poseEstimator.getEstimatedPosition());
     }
 
